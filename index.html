@@ -39,14 +39,27 @@
             Bring life’s finest moments into full bloom.
         </h2>
         <p class="text-stone-500 max-w-md mx-auto mt-4 font-light text-sm md:text-base">
-            Select your curated arrangement, review your digital receipt, and finalize your order directly with us via WhatsApp.
+            Select your curated arrangement, review your digital receipt, and finalize your order directly with us via WhatsApp[cite: 1, 2].
         </p>
     </section>
 
     <main class="max-w-6xl mx-auto px-6 pb-24 grid grid-cols-1 lg:grid-cols-3 gap-12">
         
         <div class="lg:col-span-2">
-            <h3 class="serif-font text-2xl mb-6 text-stone-900 border-b border-stone-200 pb-2">The Collection</h3>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-stone-200 pb-2 mb-6">
+                <h3 class="serif-font text-2xl text-stone-900">The Collection</h3>
+                <div class="mt-2 sm:mt-0">
+                    <label for="category-filter" class="sr-only">Filter by Category</label>
+                    <select id="category-filter" onchange="filterFlowers()" class="bg-white border border-stone-300 text-stone-700 text-sm rounded-md px-3 py-1.5 focus:outline-none focus:border-stone-500 transition cursor-pointer">
+                        <option value="all">All Arrangements</option>
+                        <option value="Roses">Roses</option>
+                        <option value="Pastels">Pastels</option>
+                        <option value="Sunflowers">Sunflowers</option>
+                        <option value="Luxury Boxes">Luxury Boxes</option>
+                    </select>
+                </div>
+            </div>
+            
             <div id="flower-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 </div>
         </div>
@@ -102,16 +115,17 @@
     </footer>
 
     <script>
-        // 1. CHANGE THIS TO YOUR WHATSAPP NUMBER (Include Country Code, omit '+' or '00')
-        const WHATSAPP_NUMBER = "1234567890"; // Example: "15551234567" for US or "919876543210" for India
+        // 1. CHANGE THIS TO YOUR WHATSAPP NUMBER (Include Country Code, omit '+' or '00') [cite: 5, 6]
+        const WHATSAPP_NUMBER = "1234567890"; // Example: "15551234567" for US [cite: 5]
         const CURRENCY_SYMBOL = "$";
 
-        // 2. YOUR FLOWER CATALOGUE DATA
+        // 2. YOUR FLOWER CATALOGUE DATA (With added "category" properties!)
         const flowers = [
             {
                 id: 1,
                 name: "The White Noir",
                 price: 85.00,
+                category: "Roses",
                 description: "Stunning white roses paired with fresh luxury eucalyptus.",
                 image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=600&q=80"
             },
@@ -119,6 +133,7 @@
                 id: 2,
                 name: "Blush Meadow Bouquet",
                 price: 95.00,
+                category: "Pastels",
                 description: "Soft pink peonies mixed with seasonal wild pastels.",
                 image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=600&q=80"
             },
@@ -126,6 +141,7 @@
                 id: 3,
                 name: "Soleil Sunflower Ritual",
                 price: 70.00,
+                category: "Sunflowers",
                 description: "Vibrant golden sunflowers wrapped in organic premium rustic burlap.",
                 image: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?auto=format&fit=crop&w=600&q=80"
             },
@@ -133,6 +149,7 @@
                 id: 4,
                 name: "Crimson Velvet Box",
                 price: 120.00,
+                category: "Luxury Boxes",
                 description: "Deep red premium roses arranged perfectly in a luxury velvet box.",
                 image: "https://images.unsplash.com/photo-1533616688419-b7a585564566?auto=format&fit=crop&w=600&q=80"
             },
@@ -140,6 +157,7 @@
                 id: 5,
                 name: "bluebird",
                 price: 120.00,
+                category: "Luxury Boxes",
                 description: "Deep red premium roses arranged perfectly in a luxury velvet box.",
                 image: "https://images.unsplash.com/photo-1533616688419-b7a585564566?auto=format&fit=crop&w=600&q=80"
              }
@@ -148,10 +166,24 @@
         // Global state tracking the shopping cart
         let cart = {};
 
-        // Render flowers on load
-        function initStore() {
+        // Render flowers on load (defaults to showing 'all')
+        function initStore(filterCategory = "all") {
             const grid = document.getElementById('flower-grid');
-            grid.innerHTML = flowers.map(flower => `
+            
+            // Filter catalog based on selected dropdown value
+            const filteredFlowers = filterCategory === "all" 
+                ? flowers 
+                : flowers.filter(flower => flower.category === filterCategory);
+
+            if (filteredFlowers.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-stone-400 text-sm font-light italic">No luxury arrangements found in this category.</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = filteredFlowers.map(flower => `
                 <div class="bg-white border border-stone-200 rounded-lg overflow-hidden group shadow-sm hover:shadow-md transition duration-300">
                     <div class="h-64 overflow-hidden relative">
                         <img src="${flower.image}" alt="${flower.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
@@ -161,6 +193,7 @@
                             <h4 class="serif-font text-xl font-medium text-stone-900">${flower.name}</h4>
                             <span class="text-stone-900 font-medium">${CURRENCY_SYMBOL}${flower.price.toFixed(2)}</span>
                         </div>
+                        <span class="inline-block text-[10px] uppercase tracking-wider bg-stone-100 text-stone-600 px-2 py-0.5 rounded mb-3 font-medium">${flower.category}</span>
                         <p class="text-stone-500 text-xs font-light mb-4 line-clamp-2">${flower.description}</p>
                         <button onclick="addToCart(${flower.id})" class="w-full bg-stone-50 border border-stone-300 text-stone-800 hover:bg-stone-900 hover:text-white text-xs font-medium uppercase tracking-wider py-2.5 rounded transition">
                             Add to Arrangement
@@ -168,6 +201,12 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Triggered when dropdown selection changes
+        function filterFlowers() {
+            const selectedCategory = document.getElementById('category-filter').value;
+            initStore(selectedCategory);
         }
 
         // Add item to cart logic
@@ -283,7 +322,9 @@
         }
 
         // Initialize display content on structural layout creation
-        window.onload = initStore;
+        window.onload = function() {
+            initStore();
+        };
     </script>
 </body>
 </html>
