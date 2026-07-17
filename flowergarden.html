@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flora & Co. | Premium Florist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FAF9F6; /* Premium off-white */
+        }
+        .serif-font {
+            font-family: 'Cormorant Garamond', serif;
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <header class="border-b border-stone-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="serif-font text-3xl tracking-wide font-semibold text-stone-900">Flora & Co.</h1>
+            <div class="relative">
+                <button onclick="toggleCart()" class="flex items-center space-x-2 text-stone-600 hover:text-stone-900 transition focus:outline-none">
+                    <span class="text-sm font-medium uppercase tracking-wider">Cart</span>
+                    <span id="cart-count" class="bg-stone-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="max-w-6xl mx-auto px-6 pt-16 pb-12 text-center">
+        <span class="text-xs uppercase tracking-widest text-stone-500 font-medium">Handcrafted Elegance</span>
+        <h2 class="serif-font text-5xl md:text-6xl font-light text-stone-950 mt-3 max-w-2xl mx-auto leading-tight">
+            Bring life’s finest moments into full bloom.
+        </h2>
+        <p class="text-stone-500 max-w-md mx-auto mt-4 font-light text-sm md:text-base">
+            Select your curated arrangement, review your digital receipt, and finalize your order directly with us via WhatsApp.
+        </p>
+    </section>
+
+    <main class="max-w-6xl mx-auto px-6 pb-24 grid grid-cols-1 lg:grid-cols-3 gap-12">
+        
+        <div class="lg:col-span-2">
+            <h3 class="serif-font text-2xl mb-6 text-stone-900 border-b border-stone-200 pb-2">The Collection</h3>
+            <div id="flower-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                </div>
+        </div>
+
+        <div class="lg:col-span-1">
+            <div class="bg-white border border-stone-200 p-6 rounded-lg shadow-sm sticky top-24">
+                <h3 class="serif-font text-2xl mb-4 text-stone-900 border-b border-stone-200 pb-2">Your Order Summary</h3>
+                
+                <div id="cart-items" class="space-y-4 max-h-60 overflow-y-auto mb-6 pr-2">
+                    <p class="text-stone-400 text-sm font-light italic">Your cart is currently empty.</p>
+                </div>
+
+                <div class="border-t border-stone-100 pt-4 space-y-2 text-sm font-light text-stone-600">
+                    <div class="flex justify-between">
+                        <span>Subtotal</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Delivery</span>
+                        <span class="text-emerald-700 font-medium">Free</span>
+                    </div>
+                    <div class="flex justify-between text-base font-semibold text-stone-900 pt-2 border-t border-stone-200">
+                        <span>Total Balance</span>
+                        <span id="total">$0.00</span>
+                    </div>
+                </div>
+
+                <form id="order-form" onsubmit="sendWhatsAppOrder(event)" class="mt-6 space-y-4">
+                    <h4 class="text-xs uppercase tracking-wider text-stone-500 font-semibold mb-2">Delivery Details</h4>
+                    <div>
+                        <label class="block text-xs text-stone-600 uppercase mb-1">Full Name</label>
+                        <input type="text" id="cust-name" required class="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-stone-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-stone-600 uppercase mb-1">Delivery Address</label>
+                        <textarea id="cust-address" rows="2" required class="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-stone-500 transition"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-stone-600 uppercase mb-1">Custom Note (Optional)</label>
+                        <input type="text" id="cust-note" placeholder="e.g., Happy Birthday!" class="w-full bg-stone-50 border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-stone-500 transition">
+                    </div>
+
+                    <button type="submit" class="w-full bg-stone-900 hover:bg-stone-800 text-white font-medium text-sm tracking-wide uppercase py-3.5 rounded transition shadow-sm mt-2">
+                        Book via WhatsApp
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-8 text-center text-xs font-light tracking-wider">
+        <p>&copy; 2026 Flora & Co. Bespoke Floristry. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // 1. CHANGE THIS TO YOUR WHATSAPP NUMBER (Include Country Code, omit '+' or '00')
+        const WHATSAPP_NUMBER = "1234567890"; // Example: "15551234567" for US or "919876543210" for India
+        const CURRENCY_SYMBOL = "$";
+
+        // 2. YOUR FLOWER CATALOGUE DATA
+        const flowers = [
+            {
+                id: 1,
+                name: "The White Noir",
+                price: 85.00,
+                description: "Stunning white roses paired with fresh luxury eucalyptus.",
+                image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 2,
+                name: "Blush Meadow Bouquet",
+                price: 95.00,
+                description: "Soft pink peonies mixed with seasonal wild pastels.",
+                image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 3,
+                name: "Soleil Sunflower Ritual",
+                price: 70.00,
+                description: "Vibrant golden sunflowers wrapped in organic premium rustic burlap.",
+                image: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 4,
+                name: "Crimson Velvet Box",
+                price: 120.00,
+                description: "Deep red premium roses arranged perfectly in a luxury velvet box.",
+                image: "https://images.unsplash.com/photo-1533616688419-b7a585564566?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+
+        // Global state tracking the shopping cart
+        let cart = {};
+
+        // Render flowers on load
+        function initStore() {
+            const grid = document.getElementById('flower-grid');
+            grid.innerHTML = flowers.map(flower => `
+                <div class="bg-white border border-stone-200 rounded-lg overflow-hidden group shadow-sm hover:shadow-md transition duration-300">
+                    <div class="h-64 overflow-hidden relative">
+                        <img src="${flower.image}" alt="${flower.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-baseline mb-1">
+                            <h4 class="serif-font text-xl font-medium text-stone-900">${flower.name}</h4>
+                            <span class="text-stone-900 font-medium">${CURRENCY_SYMBOL}${flower.price.toFixed(2)}</span>
+                        </div>
+                        <p class="text-stone-500 text-xs font-light mb-4 line-clamp-2">${flower.description}</p>
+                        <button onclick="addToCart(${flower.id})" class="w-full bg-stone-50 border border-stone-300 text-stone-800 hover:bg-stone-900 hover:text-white text-xs font-medium uppercase tracking-wider py-2.5 rounded transition">
+                            Add to Arrangement
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add item to cart logic
+        function addToCart(id) {
+            if (cart[id]) {
+                cart[id]++;
+            } else {
+                cart[id] = 1;
+            }
+            updateCartUI();
+        }
+
+        // Modify item quantities
+        function changeQuantity(id, delta) {
+            if (!cart[id]) return;
+            cart[id] += delta;
+            if (cart[id] <= 0) {
+                delete cart[id];
+            }
+            updateCartUI();
+        }
+
+        // Calculate and update text displays
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            let subtotal = 0;
+            let totalItems = 0;
+            let htmlContent = '';
+
+            // Build list items HTML dynamically
+            Object.keys(cart).forEach(id => {
+                const flower = flowers.find(f => f.id == id);
+                if (flower) {
+                    const count = cart[id];
+                    const itemCost = flower.price * count;
+                    subtotal += itemCost;
+                    totalItems += count;
+
+                    htmlContent += `
+                        <div class="flex items-center justify-between text-sm bg-stone-50 p-2.5 rounded border border-stone-100">
+                            <div>
+                                <h5 class="font-medium text-stone-900">${flower.name}</h5>
+                                <span class="text-xs text-stone-500">${CURRENCY_SYMBOL}${flower.price.toFixed(2)} each</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex items-center border border-stone-300 rounded bg-white overflow-hidden">
+                                    <button onclick="changeQuantity(${id}, -1)" class="px-2 py-0.5 hover:bg-stone-100 text-stone-600">-</button>
+                                    <span class="px-2 text-xs font-medium text-stone-800">${count}</span>
+                                    <button onclick="changeQuantity(${id}, 1)" class="px-2 py-0.5 hover:bg-stone-100 text-stone-600">+</button>
+                                </div>
+                                <span class="font-medium text-stone-900 text-xs">${CURRENCY_SYMBOL}${itemCost.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Update DOM element states
+            document.getElementById('cart-count').innerText = totalItems;
+            document.getElementById('subtotal').innerText = CURRENCY_SYMBOL + subtotal.toFixed(2);
+            document.getElementById('total').innerText = CURRENCY_SYMBOL + subtotal.toFixed(2);
+
+            if (htmlContent === '') {
+                cartItemsContainer.innerHTML = `<p class="text-stone-400 text-sm font-light italic">Your cart is currently empty.</p>`;
+            } else {
+                cartItemsContainer.innerHTML = htmlContent;
+            }
+        }
+
+        // Compile details and redirect to WhatsApp API
+        function sendWhatsAppOrder(event) {
+            event.preventDefault();
+
+            // Validate cart structure
+            if (Object.keys(cart).length === 0) {
+                alert("Please add at least one luxury arrangement to your cart before checking out.");
+                return;
+            }
+
+            // Extract customer info
+            const name = document.getElementById('cust-name').value;
+            const address = document.getElementById('cust-address').value;
+            const note = document.getElementById('cust-note').value || "None";
+
+            // Format message template
+            let message = `💐 *NEW FLOWER BOOKING - FLORA & CO.*\n\n`;
+            message += `*Customer Details:*\n`;
+            message += `👤 Name: ${name}\n`;
+            message += `📍 Address: ${address}\n`;
+            message += `📝 Note: ${note}\n\n`;
+            message += `*Order Receipt:*\n`;
+
+            let subtotal = 0;
+            Object.keys(cart).forEach(id => {
+                const flower = flowers.find(f => f.id == id);
+                if (flower) {
+                    const count = cart[id];
+                    const cost = flower.price * count;
+                    subtotal += cost;
+                    message += `• ${flower.name} x${count} — ${CURRENCY_SYMBOL}${cost.toFixed(2)}\n`;
+                }
+            });
+
+            message += `\n*Total Balance:* ${CURRENCY_SYMBOL}${subtotal.toFixed(2)}\n`;
+            message += `✨ Thank you for choosing Flora & Co. Please reply to confirm delivery window!`;
+
+            // URL Encode text string for API transmission
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+
+            // Open window natively to pass transaction to WhatsApp app
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Initialize display content on structural layout creation
+        window.onload = initStore;
+    </script>
+</body>
+</html>
