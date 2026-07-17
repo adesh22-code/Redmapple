@@ -17,6 +17,15 @@
         .serif-font {
             font-family: 'Cormorant Garamond', serif;
         }
+        /* Smooth scrolling behavior for the rotating gallery carousel */
+        .carousel-container {
+            scroll-behavior: smooth;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .carousel-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
+        }
     </style>
 </head>
 <body class="text-stone-800">
@@ -25,7 +34,7 @@
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
             <h1 class="serif-font text-3xl tracking-wide font-semibold text-stone-900">Flora & Co.</h1>
             <div class="relative">
-                <button onclick="toggleCart()" class="flex items-center space-x-2 text-stone-600 hover:text-stone-900 transition focus:outline-none">
+                <button class="flex items-center space-x-2 text-stone-600 hover:text-stone-900 transition focus:outline-none">
                     <span class="text-sm font-medium uppercase tracking-wider">Cart</span>
                     <span id="cart-count" class="bg-stone-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">0</span>
                 </button>
@@ -39,28 +48,38 @@
             Bring life’s finest moments into full bloom.
         </h2>
         <p class="text-stone-500 max-w-md mx-auto mt-4 font-light text-sm md:text-base">
-            Select your curated arrangement, review your digital receipt, and finalize your order directly with us via WhatsApp[cite: 1, 2].
+            Select your curated arrangement, review your digital receipt, and finalize your order directly with us via WhatsApp.
         </p>
     </section>
 
     <main class="max-w-6xl mx-auto px-6 pb-24 grid grid-cols-1 lg:grid-cols-3 gap-12">
         
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-2 overflow-hidden">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-stone-200 pb-2 mb-6">
                 <h3 class="serif-font text-2xl text-stone-900">The Collection</h3>
-                <div class="mt-2 sm:mt-0">
-                    <label for="category-filter" class="sr-only">Filter by Category</label>
-                    <select id="category-filter" onchange="filterFlowers()" class="bg-white border border-stone-300 text-stone-700 text-sm rounded-md px-3 py-1.5 focus:outline-none focus:border-stone-500 transition cursor-pointer">
-                        <option value="all">All Arrangements</option>
-                        <option value="Roses">Roses</option>
-                        <option value="Pastels">Pastels</option>
-                        <option value="Sunflowers">Sunflowers</option>
-                        <option value="Luxury Boxes">Luxury Boxes</option>
-                    </select>
+                <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+                    <div>
+                        <label for="category-filter" class="sr-only">Filter by Category</label>
+                        <select id="category-filter" onchange="filterFlowers()" class="bg-white border border-stone-300 text-stone-700 text-sm rounded-md px-3 py-1.5 focus:outline-none focus:border-stone-500 transition cursor-pointer">
+                            <option value="all">All Arrangements</option>
+                            <option value="Roses">Roses</option>
+                            <option value="Pastels">Pastels</option>
+                            <option value="Sunflowers">Sunflowers</option>
+                            <option value="Luxury Boxes">Luxury Boxes</option>
+                        </select>
+                    </div>
+                    <div id="carousel-controls" class="flex items-center space-x-2">
+                        <button onclick="slideGallery(-1)" class="bg-white border border-stone-300 hover:bg-stone-950 hover:text-white text-stone-700 w-8 h-8 rounded-full flex items-center justify-center transition focus:outline-none">
+                            &#8592;
+                        </button>
+                        <button onclick="slideGallery(1)" class="bg-white border border-stone-300 hover:bg-stone-950 hover:text-white text-stone-700 w-8 h-8 rounded-full flex items-center justify-center transition focus:outline-none">
+                            &#8594;
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <div id="flower-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div id="flower-grid" class="carousel-container flex gap-6 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory">
                 </div>
         </div>
 
@@ -115,11 +134,11 @@
     </footer>
 
     <script>
-        // 1. CHANGE THIS TO YOUR WHATSAPP NUMBER (Include Country Code, omit '+' or '00') [cite: 5, 6]
-        const WHATSAPP_NUMBER = "1234567890"; // Example: "15551234567" for US [cite: 5]
+        // 1. CHANGE THIS TO YOUR WHATSAPP NUMBER (Include Country Code, omit '+' or '00')
+        const WHATSAPP_NUMBER = "1234567890"; 
         const CURRENCY_SYMBOL = "$";
 
-        // 2. YOUR FLOWER CATALOGUE DATA (With added "category" properties!)
+        // 2. YOUR FLOWER CATALOGUE DATA 
         const flowers = [
             {
                 id: 1,
@@ -166,25 +185,30 @@
         // Global state tracking the shopping cart
         let cart = {};
 
-        // Render flowers on load (defaults to showing 'all')
+        // Render flowers inside the rotating horizontal gallery layout
         function initStore(filterCategory = "all") {
             const grid = document.getElementById('flower-grid');
+            const controls = document.getElementById('carousel-controls');
             
-            // Filter catalog based on selected dropdown value
             const filteredFlowers = filterCategory === "all" 
                 ? flowers 
                 : flowers.filter(flower => flower.category === filterCategory);
 
             if (filteredFlowers.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full text-center py-12">
+                    <div class="w-full text-center py-12">
                         <p class="text-stone-400 text-sm font-light italic">No luxury arrangements found in this category.</p>
                     </div>`;
+                controls.style.display = 'none';
                 return;
             }
 
+            // Show or hide slider arrows depending on item counts
+            controls.style.display = filteredFlowers.length > 2 ? 'flex' : 'none';
+
+            // Modified layout styling: Min-width given to cards to fit beautifully inside the slider line
             grid.innerHTML = filteredFlowers.map(flower => `
-                <div class="bg-white border border-stone-200 rounded-lg overflow-hidden group shadow-sm hover:shadow-md transition duration-300">
+                <div class="min-w-[280px] sm:min-w-[320px] bg-white border border-stone-200 rounded-lg overflow-hidden group shadow-sm hover:shadow-md transition duration-300 snap-start flex-shrink-0">
                     <div class="h-64 overflow-hidden relative">
                         <img src="${flower.image}" alt="${flower.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     </div>
@@ -201,15 +225,24 @@
                     </div>
                 </div>
             `).join('');
+            
+            // Reset slider position to start on filter swap
+            grid.scrollLeft = 0;
         }
 
-        // Triggered when dropdown selection changes
+        // Logic to slide items horizontally left or right
+        function slideGallery(direction) {
+            const container = document.getElementById('flower-grid');
+            // Grabs width of one full card element to shift accurately
+            const cardWidth = container.querySelector('.min-w-\\[280px\\]')?.offsetWidth || 320;
+            container.scrollLeft += direction * (cardWidth + 24); // Card width + gap size
+        }
+
         function filterFlowers() {
             const selectedCategory = document.getElementById('category-filter').value;
             initStore(selectedCategory);
         }
 
-        // Add item to cart logic
         function addToCart(id) {
             if (cart[id]) {
                 cart[id]++;
@@ -219,7 +252,6 @@
             updateCartUI();
         }
 
-        // Modify item quantities
         function changeQuantity(id, delta) {
             if (!cart[id]) return;
             cart[id] += delta;
@@ -229,14 +261,12 @@
             updateCartUI();
         }
 
-        // Calculate and update text displays
         function updateCartUI() {
             const cartItemsContainer = document.getElementById('cart-items');
             let subtotal = 0;
             let totalItems = 0;
             let htmlContent = '';
 
-            // Build list items HTML dynamically
             Object.keys(cart).forEach(id => {
                 const flower = flowers.find(f => f.id == id);
                 if (flower) {
@@ -264,7 +294,6 @@
                 }
             });
 
-            // Update DOM element states
             document.getElementById('cart-count').innerText = totalItems;
             document.getElementById('subtotal').innerText = CURRENCY_SYMBOL + subtotal.toFixed(2);
             document.getElementById('total').innerText = CURRENCY_SYMBOL + subtotal.toFixed(2);
@@ -276,22 +305,18 @@
             }
         }
 
-        // Compile details and redirect to WhatsApp API
         function sendWhatsAppOrder(event) {
             event.preventDefault();
 
-            // Validate cart structure
             if (Object.keys(cart).length === 0) {
                 alert("Please add at least one luxury arrangement to your cart before checking out.");
                 return;
             }
 
-            // Extract customer info
             const name = document.getElementById('cust-name').value;
             const address = document.getElementById('cust-address').value;
             const note = document.getElementById('cust-note').value || "None";
 
-            // Format message template
             let message = `💐 *NEW FLOWER BOOKING - FLORA & CO.*\n\n`;
             message += `*Customer Details:*\n`;
             message += `👤 Name: ${name}\n`;
@@ -313,15 +338,12 @@
             message += `\n*Total Balance:* ${CURRENCY_SYMBOL}${subtotal.toFixed(2)}\n`;
             message += `✨ Thank you for choosing Flora & Co. Please reply to confirm delivery window!`;
 
-            // URL Encode text string for API transmission
             const encodedMessage = encodeURIComponent(message);
             const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
-            // Open window natively to pass transaction to WhatsApp app
             window.open(whatsappUrl, '_blank');
         }
 
-        // Initialize display content on structural layout creation
         window.onload = function() {
             initStore();
         };
